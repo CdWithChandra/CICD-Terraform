@@ -122,3 +122,63 @@ pipeline {
         }
     }
 }
+
+
+#choice Parameters
+
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['Apply', 'Destroy'],
+            description: 'Select the Terraform action'
+        )
+    }
+
+    stages {
+        stage('Git Clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/CloudTechDevOps/Terraform_CICD.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+
+        stage('Terraform Plan') {
+            when {
+                expression { params.ACTION == 'Apply' }
+            }
+            steps {
+                sh 'terraform plan -out=tfplan'
+            }
+        }
+
+        stage('Approval') {
+            steps {
+                input(
+                    message: "You selected ${params.ACTION}. Continue?",
+                    ok: "Proceed"
+                )
+            }
+        }
+
+        stage('Execute') {
+            steps {
+                script {
+                    if (params.ACTION == 'Apply') {
+                        sh 'terraform apply -auto-approve tfplan'
+                    } else {
+                        sh 'terraform destroy -auto-approve'
+                    }
+                }
+            }
+        }
+    }
+}
+
