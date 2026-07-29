@@ -73,3 +73,52 @@ pipeline {
     }
 }
 
+--------------------------
+multi stage example: Ec2 
+-------------------------
+
+pipeline {
+    agent any
+
+    stages {
+        stage('clone') {
+            steps {
+               git branch: 'main', url: 'https://github.com/CdWithChandra/Terraform_CICD.git'
+            }
+        }
+        stage('init') {
+            steps {
+               sh 'terraform init'
+            }
+        }
+        stage('validate') {
+            steps {
+               sh 'terraform validate'
+            }
+        }
+        stage('plan') {
+            steps {
+               sh 'terraform plan'
+            }
+        }
+        stage('approval') {
+            steps {
+               input(
+                        message: 'Approve Terraform deployment?',
+                        ok: 'Deploy'
+                    )
+            }
+        }
+        
+        stage('apply') {
+            steps {
+               sh 'terraform apply -auto-approve'
+            }
+        }
+        stage('destroy') {
+            steps {
+               sh 'terraform destroy -auto-approve'
+            }
+        }
+    }
+}
