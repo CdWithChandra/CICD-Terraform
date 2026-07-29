@@ -42,7 +42,7 @@ pipeline {
     stages {
         stage('git checkout') {
             steps {
-               git branch: 'main', url: 'https://github.com/CloudTechDevOps/Terraform-0730am.git'
+               git branch: 'main', url: 'https://github.com/CdWithChandra/Terraform_CICD.git'
             }
         }
          stage('init') {
@@ -140,7 +140,7 @@ pipeline {
     stages {
         stage('Git Clone') {
             steps {
-                git branch: 'main', url: 'https://github.com/CloudTechDevOps/Terraform_CICD.git'
+                git branch: 'main', url: 'https://github.com/CdWithChandra/Terraform_CICD.git'
             }
         }
 
