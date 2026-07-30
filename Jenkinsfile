@@ -240,3 +240,72 @@ pipeline {
     }
 }
 
+----------------------------------------------------------------------
+multi stage with choice Parameters with change directory example: Ec2 
+----------------------------------------------------------------------
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['Apply', 'Destroy'],
+            description: 'Select the Terraform action'
+        )
+    }
+
+    stages {
+        stage('Git Clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/CdWithChandra/terraform-practice.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir('Day2-terraform-configurations') {
+                sh 'terraform init'
+            }
+        }
+   }
+        stage('Terraform Plan') {
+            when {
+                expression { params.ACTION == 'Apply' }
+            }
+            steps {
+                dir('Day2-terraform-configurations') {
+                sh 'terraform plan -out=tfplan'
+            }
+        }
+   }
+        stage('Approval') {
+            steps {
+                input(
+                    message: "You selected ${params.ACTION}. Continue?",
+                    ok: "Proceed"
+                )
+            }
+        }
+
+        stage('Execute') {
+            steps {
+                script {
+                    if (params.ACTION == 'Apply') {
+                        dir('Day2-terraform-configurations') {
+                        sh 'terraform apply -auto-approve tfplan'
+                        }
+                    } else {
+                        sh 'terraform destroy -auto-approve'
+                    }
+                }
+            }
+        }
+         stage('Terraform destroy') {
+            steps {
+                dir('Day2-terraform-configurations') {
+                sh 'terraform destroy -auto-approve'
+            }
+            }
+        }
+    }
+}
