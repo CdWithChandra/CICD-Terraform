@@ -123,9 +123,67 @@ pipeline {
     }
 }
 
+----------------------------------------------------------
+multi stage with github repo change directory example: Ec2 
+----------------------------------------------------------
 
-#choice Parameters
+pipeline {
+    agent any
 
+    stages {
+        stage('Git-clone') {
+            steps {
+               git branch: 'main', url: 'https://github.com/CdWithChandra/terraform-practice.git'
+            }
+        }
+        stage('terraform-init') {
+            steps {
+                dir('Day2-terraform-configurations') {
+               sh 'terraform init'
+            }
+        }
+    }
+        stage('terraform-validate') {
+            steps {
+                dir('Day2-terraform-configurations') {
+               sh 'terraform validate'
+            }
+        }
+    }
+        stage('terraform-plan') {
+            steps {
+                  dir('Day2-terraform-configurations') {
+               sh 'terraform plan'
+            }
+        }
+   }
+        stage('Execute') {
+            steps {
+               input(
+                        message: 'Approve Terraform deployment?',
+                        ok: 'Deploy'
+                    )
+            }
+        }
+        
+        stage('terraform-apply') {
+            steps {
+                dir('Day2-terraform-configurations') {
+               sh 'terraform apply -auto-approve'
+            }
+        }
+    }
+        stage('terraform-destroy') {
+            steps {
+               sh 'terraform destroy -auto-approve'
+            }
+        }
+    }
+}    
+
+----------------------------------------------------------
+multi stage with choice Parameters example: Ec2 
+----------------------------------------------------------
 pipeline {
     agent any
 
